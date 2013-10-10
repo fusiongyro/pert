@@ -56,6 +56,18 @@ on_critical_path(Activity) :-
     slack(Activity, Slack),
     Slack =:= 0.
 
+:- public(write_graph/1).
+:- mode(write_graph(+filename), one).
+:- info(write_graph/1, [
+	    comment is 'Writes the PERT output to a GraphViz file with the specified name.',
+	    arguments is ['Filename'-filename],
+	    argnames is ['Filename']]).
+write_graph(Filename) :-
+    self(Self),
+    graphviz::new(Graph),
+    Self::send_dependencies(Graph),
+    Graph::write_dot(Filename, Self).
+
 % P R O T O C O L S
 
 % timeReceiver
@@ -66,13 +78,13 @@ add_time(Activity, Time) :-
 node_label(Activity, Label) :-
     activity(Activity),
     (on_critical_path(Activity)
-    	-> 	phrase(critical_node_label(Activity), Label)
-    	; 	phrase(noncritical_node_label(Activity), Label)).
+    	-> 	(phrase(critical_node_label(Activity), Label0), atom_codes(Label, Label0))
+    	; 	(phrase(noncritical_node_label(Activity), Label0), atom_codes(Label, Label0))).
 
-node_attrs(Activity, [bold=true]) 	:- on_critical_path(Activity).
+node_attrs(Activity, [style=bold]) 	:- on_critical_path(Activity).
 node_attrs(Activity, []) 			:- activity(Activity), \+ on_critical_path(Activity).
 
-edge_attrs(A depends_on B, [bold=true]) :-
+edge_attrs(A depends_on B, [style=bold]) :-
     on_critical_path(A), on_critical_path(B).
 edge_attrs(A depends_on B, []) :-
       \+ on_critical_path(A)

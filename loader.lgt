@@ -14,6 +14,7 @@
 				      dependencyReceiver,
 				      dependencyTracking,
 				      labeller,
+				      graphviz,
 				      pert,
 				      gaussian,
 				      project,
