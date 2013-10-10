@@ -1,5 +1,6 @@
 :- object(pert,
-	  implements([timeReceiver, dependencyReceiver, dependencyProvider, labeller]),
+	  implements([timeReceiver, labeller]),
+	  imports(dependencyTracking),
 	  instantiates(class),
 	  specializes(object)).
 
@@ -50,7 +51,10 @@ slack(Activity, Slack) :-
     comment is 'Succeeds if Activity is on the critical path, meaning the slack time is zero.',
     arguments is ['Activity'-'activity label'],
     argnames is ['Activity']]).
-on_critical_path(Activity) :- slack(Activity, Slack), Slack =:= 0.
+on_critical_path(Activity) :-
+    activity(Activity),
+    slack(Activity, Slack),
+    Slack =:= 0.
 
 % P R O T O C O L S
 
@@ -58,23 +62,15 @@ on_critical_path(Activity) :- slack(Activity, Slack), Slack =:= 0.
 add_time(Activity, Time) :-
     ::assertz(time(Activity, Time)).
 
-% dependencyReceiver
-add_dependency(X depends_on Y) :-
-    ::assertz(X depends_on Y).
-
-% dependencyProvider
-send_dependencies(Receiver) :-
-    findall(X depends_on Y, ::(X depends_on Y), Dependencies),
-    meta::map(Receiver::add_dependency, Dependencies).
-
 % labeller
 node_label(Activity, Label) :-
-    on_critical_path(Activity)
+    activity(Activity),
+    (on_critical_path(Activity)
     	-> 	phrase(critical_node_label(Activity), Label)
-    	; 	phrase(noncritical_node_label(Activity), Label).
+    	; 	phrase(noncritical_node_label(Activity), Label)).
 
 node_attrs(Activity, [bold=true]) 	:- on_critical_path(Activity).
-node_attrs(Activity, []) 			:- \+ on_critical_path(Activity).
+node_attrs(Activity, []) 			:- activity(Activity), \+ on_critical_path(Activity).
 
 edge_attrs(A depends_on B, [bold=true]) :-
     on_critical_path(A), on_critical_path(B).
@@ -205,8 +201,7 @@ activity(Activity) :-
 % stored facts
 % DO NOT USE THESE! THEY ARE PUBLIC FOR TECHNICAL REASONS ONLY!
 :- public(time/2).
-:- public((depends_on)/2).
-:- dynamic time/2, (depends_on)/2.
+:- dynamic time/2.
 
 % caches
 % DO NOT USE THESE! THEY ARE PUBLIC FOR TECHNICAL REASONS!

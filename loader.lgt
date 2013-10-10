@@ -2,10 +2,7 @@
 
 :- initialization(logtalk_load([
 				      '$HOME/logtalk/examples/roots/loader',
-				      library(metap),
-				      library(meta),
-				      library(types_loader),
-				      library(metapredicates_loader)])).
+				      library(all_loader)])).
 
 :- op(500, xfx, depends_on).
 :- set_logtalk_flag(dynamic_declarations, allow).
@@ -15,5 +12,9 @@
 				      timeReceiver,
 				      dependencyProvider,
 				      dependencyReceiver,
+				      dependencyTracking,
 				      labeller,
-				      pert])).
+				      pert,
+				      gaussian,
+				      project,
+				      csvParser])).
