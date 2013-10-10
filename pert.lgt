@@ -1,12 +1,12 @@
-:- info([
-       comment is 'Implements Program Evaluation and Review Technique (PERT).',
-       author is 'Daniel Lyons',
-       date is 2013/1010]).
-
 :- object(pert,
 	  implements([timeReceiver, dependencyReceiver, dependencyProvider, labeller]),
 	  instantiates(class),
 	  specializes(object)).
+
+:- info([
+       comment is 'Implements Program Evaluation and Review Technique (PERT).',
+       author is 'Daniel Lyons',
+       date is 2013/10/10]).
 
 % P U B L I C    A P I
 :- public(early/2).

@@ -1,9 +1,3 @@
-info([
-	    author 	is 'Daniel Lyons',
-	    date 	is 2013/10/10,
-	    comment is
-	    	'This is PERT in Logtalk.']).
-
 :- use_module(library(dcg/basics)).
 
 :- initialization(logtalk_load([

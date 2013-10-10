@@ -1,9 +1,9 @@
+:- protocol(labeller).
+
 :- info([
        comment is 'Provides labeling information about a graph.',
        author is 'Daniel Lyons',
        date is 2013/10/10]).
-
-:- protocol(labeller).
 
 :- public(node_label/2).
 :- mode(node_label(+node, ?label), zero_or_one).
