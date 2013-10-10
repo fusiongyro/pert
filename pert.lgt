@@ -1,13 +1,21 @@
+:- info([
+       comment is 'Implements Program Evaluation and Review Technique (PERT).',
+       author is 'Daniel Lyons',
+       date is 2013/1010]).
+
 :- object(pert,
 	  implements([timeReceiver, dependencyReceiver, dependencyProvider, labeller]),
 	  instantiates(class),
 	  specializes(object)).
 
-
 % P U B L I C    A P I
 :- public(early/2).
 :- mode(early(?atom, ?timeRange), zero_or_more).
 :- mode(early(+atom, ?timeRange), zero_or_one).
+:- info(early/2, [
+    comment is 'Unify Activity with the Start-Finish time range for the early case.',
+    arguments is ['Activity'-'activity label', 'Time'-'time range'],
+    argnames is ['Activity', 'Start-Finish']]).
 early(Activity, Start-Finish) :-
     activity(Activity),
     early_start(Activity, Start),
@@ -16,6 +24,10 @@ early(Activity, Start-Finish) :-
 :- public(late/2).
 :- mode(late(?atom, ?timeRange), zero_or_more).
 :- mode(late(+atom, ?timeRange), zero_or_one).
+:- info(late/2, [
+    comment is 'Unify Activity with the Start-Finish time range for the late case.',
+    arguments is ['Activity'-'activity label', 'Time'-'time range'],
+    argnames is ['Activity', 'Start-Finish']]).
 late(Activity, Start-Finish) :-
     activity(Activity),
     late_start(Activity, Start),
@@ -23,32 +35,84 @@ late(Activity, Start-Finish) :-
 
 :- public(slack/2).
 :- mode(slack(+atom, ?number), zero_or_one).
+:- info(slack/2, [
+    comment is 'Unify Activity with the Slack time permitted for this activity. May be zero.',
+    arguments is ['Activity'-'activity label', 'Slack'-'slack time'],
+    argnames is ['Activity', 'Slack']]).
 slack(Activity, Slack) :-
     early_finish(Activity, EF),
     late_finish(Activity, LF),
     Slack is LF - EF.
 
-:- public(critical_path_element/1).
-:- mode(critical_path_element(+atom), zero_or_one).
-critical_path_element(Activity) :- slack(Activity, 0.0).
+:- public(on_critical_path/1).
+:- mode(on_critical_path(+atom), zero_or_one).
+:- info(on_critical_path/1, [
+    comment is 'Succeeds if Activity is on the critical path, meaning the slack time is zero.',
+    arguments is ['Activity'-'activity label'],
+    argnames is ['Activity']]).
+on_critical_path(Activity) :- slack(Activity, 0.0).
 
 % P R O T O C O L S
 
 % timeReceiver
-add_time(Activity, Time) :- ::assertz(time(Activity, Time)).
+add_time(Activity, Time) :-
+    ::assertz(time(Activity, Time)).
 
 % dependencyReceiver
-add_dependency(X depends_on Y) :- ::assertz(X depends_on Y).
+add_dependency(X depends_on Y) :-
+    ::assertz(X depends_on Y).
 
 % dependencyProvider
 send_dependencies(Receiver) :-
     findall(X depends_on Y, ::(X depends_on Y), Dependencies),
-    list::map(Receiver::add_dependency, Dependencies).
+    meta::map(Receiver::add_dependency, Dependencies).
 
 % labeller
-node_label(Activity, Activity). % FIXME: stub
-node_attrs(_, []). % FIXME: stub
-edge_attrs(_ depends_on _, []). % FIXME: stub
+node_label(Activity, Label) :-
+    on_critical_path(Activity)
+    	-> 	phrase(critical_node_label(Activity), Label)
+    	; 	phrase(noncritical_node_label(Activity), Label).
+
+node_attrs(Activity, [bold=true]) 	:- on_critical_path(Activity).
+node_attrs(Activity, []) 			:- \+ on_critical_path(Activity).
+
+edge_attrs(A depends_on B, [bold=true]) :-
+    on_critical_path(A), on_critical_path(B).
+edge_attrs(A depends_on B, []) :-
+      \+ on_critical_path(A)
+    ; \+ on_critical_path(B).
+
+% element_label(-Project, -Activity) is det.
+%    Generates a generic label for the given element, with the full
+%    complement of early/late start/finish.
+noncritical_node_label(A) -->
+    {	early(A, EarlyStart-EarlyFinish), late(A, LateStart-LateFinish)	},
+    "<<TABLE BORDER=\"0\"><TR>",
+    "<TD>", decimal(EarlyStart), "</TD>",
+    "<TD></TD>",
+    "<TD>", decimal(EarlyFinish), "</TD></TR>",
+    "<TR><TD></TD><TD>\\N</TD><TD></TD></TR>",
+    "<TR>",
+    "<TD>", decimal(LateStart), "</TD>",
+    "<TD></TD>",
+    "<TD>", decimal(LateFinish), "</TD>",
+    "</TR></TABLE>>".
+
+% critical_path_element_label(-Project, -Name) is det.
+%   Generate a node label for a critical path element, containing just
+%   start/finish. Items on the critical path have the same early and
+%   late start/finish, so there's no need to repeat them.
+critical_node_label(A) -->
+    {	early(A, Start-Finish)	},
+    "<<TABLE BORDER=\"0\"><TR>",
+    "<TD>", decimal(Start), "</TD>",
+    "<TD>\\N</TD>",
+    "<TD>", decimal(Finish), "</TD>",
+    "</TR></TABLE>>".
+
+decimal(D) -->
+    {	format(atom(Formatted), '~2f', [D])	},
+    dcg_basics:atom(Formatted).
 
 % P R I V A T E   A P I
 early_start(Activity, 0) :-
@@ -57,7 +121,7 @@ early_start(Activity, 0) :-
     ::asserta(early_start(Activity, 0)).
 early_start(Activity, ES) :-
     predecessors(Activity, Predecessors),
-    list::map(early_finish, Predecessors, FinishingTimes),
+    meta::map(early_finish, Predecessors, FinishingTimes),
     list::max(FinishingTimes, ES),
     ::asserta(early_start(Activity, ES)).
 
@@ -87,7 +151,7 @@ late_finish(Activity, Last) :-
 late_finish(Activity, LF) :-
     activity(Activity),
     successors(Activity, Successors),
-    list::map(late_start, Successors, Starts),
+    meta::map(late_start, Successors, Starts),
     list::min(Starts, LF),
     ::asserta(late_finish(Activity, LF)).
 
