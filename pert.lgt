@@ -50,7 +50,7 @@ slack(Activity, Slack) :-
     comment is 'Succeeds if Activity is on the critical path, meaning the slack time is zero.',
     arguments is ['Activity'-'activity label'],
     argnames is ['Activity']]).
-on_critical_path(Activity) :- slack(Activity, 0.0).
+on_critical_path(Activity) :- slack(Activity, Slack), Slack =:= 0.
 
 % P R O T O C O L S
 
@@ -115,45 +115,67 @@ decimal(D) -->
     dcg_basics:atom(Formatted).
 
 % P R I V A T E   A P I
+:- public(early_start/2).
+early_start(Activity, Cached) :-
+    cache(early_start(Activity, Cached)),
+    !.
 early_start(Activity, 0) :-
     activity(Activity),
     \+ has_predecessors(Activity),
-    ::asserta(early_start(Activity, 0)).
+    ::asserta(cache(early_start(Activity, 0))).
 early_start(Activity, ES) :-
     predecessors(Activity, Predecessors),
-    meta::map(early_finish, Predecessors, FinishingTimes),
+    self(Self),
+    meta::map([X,Y]>>(Self::early_finish(X,Y)), Predecessors, FinishingTimes),
     list::max(FinishingTimes, ES),
-    ::asserta(early_start(Activity, ES)).
+    ::asserta(cache(early_start(Activity, ES))).
 
+:- public(early_finish/2).
+early_finish(Activity, Cached) :-
+    cache(early_finish(Activity, Cached)),
+    !.
 early_finish(Activity, EF) :-
     early_start(Activity, ES),
     ::time(Activity, Duration),
     EF is ES + Duration,
-    ::asserta(early_finish(Activity, EF)).
+    ::asserta(cache(early_finish(Activity, EF))).
 
-late_start(Activity, LS) :-
-    late_finish(Activity, LF),
-    ::time(Activity, ET),
-    LS is LF - ET,
-    ::asserta(late_start(Activity, LS)).
-
+:- private(last_finish/1).
+last_finish(Cached) :-
+    cache(last_finish(Cached)),
+    !.
 last_finish(Time) :-
     early_finish(_, Time),
     \+ (early_finish(_, Time2), Time2 > Time),
     !,
-    ::asserta(last_finish(Time)).
+    ::asserta(cache(last_finish(Time))).
 
+:- private(late_start/2).
+late_start(Activity, Cached) :-
+    cache(late_start(Activity, Cached)),
+    !.
+late_start(Activity, LS) :-
+    late_finish(Activity, LF),
+    ::time(Activity, ET),
+    LS is LF - ET,
+    ::asserta(cache(late_start(Activity, LS))).
+
+:- private(late_finish/2).
+late_finish(Activity, Cached) :-
+    cache(late_finish(Activity, Cached)),
+    !.
 late_finish(Activity, Last) :-
     activity(Activity),
     \+ has_successors(Activity),
     ::last_finish(Last),
-    ::asserta(late_finish(Activity, Last)).
+    ::asserta(cache(late_finish(Activity, Last))).
 late_finish(Activity, LF) :-
     activity(Activity),
     successors(Activity, Successors),
-    meta::map(late_start, Successors, Starts),
+    self(Self),
+    meta::map([X,Y]>>(Self::late_start(X,Y)), Successors, Starts),
     list::min(Starts, LF),
-    ::asserta(late_finish(Activity, LF)).
+    ::asserta(cache(late_finish(Activity, LF))).
 
 :- private(predecessors/2).
 :- mode(predecessors(+atom, -list), zero_or_one).
@@ -178,9 +200,7 @@ has_successors(Activity) 	:- successors(Activity, [_|_]).
 %:- mode(activity(?atom), zero_or_more).
 %:- mode(activity(+atom), zero_or_one).
 activity(Activity) :-
-    setof(Activity, ::time(Activity,_), Activities),
-    !,
-    list::member(Activity, Activities).
+    ::time(Activity,_).
 
 % stored facts
 % DO NOT USE THESE! THEY ARE PUBLIC FOR TECHNICAL REASONS ONLY!
@@ -190,9 +210,7 @@ activity(Activity) :-
 
 % caches
 % DO NOT USE THESE! THEY ARE PUBLIC FOR TECHNICAL REASONS!
-:- public(early_start/2). 	:- public(early_finish/2).
-:- public(late_start/2). 	:- public(late_finish/2).
-:- public(last_finish/1).
-:- dynamic early_start/2, early_finish/2, late_start/2, late_finish/2, last_finish/1.
+:- public(cache/1).
+:- dynamic cache/1.
 
 :- end_object.
