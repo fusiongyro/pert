@@ -18,4 +18,5 @@
 				      pert,
 				      gaussian,
 				      project,
-				      csvParser])).
+				      csvParser,
+				      main])).

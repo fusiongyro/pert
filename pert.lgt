@@ -59,14 +59,24 @@ on_critical_path(Activity) :-
 :- public(write_graph/1).
 :- mode(write_graph(+filename), one).
 :- info(write_graph/1, [
-	    comment is 'Writes the PERT output to a GraphViz file with the specified name.',
-	    arguments is ['Filename'-filename],
-	    argnames is ['Filename']]).
+    comment is 'Writes the PERT output to a GraphViz file with the specified name.',
+    arguments is ['Filename'-filename],
+    argnames is ['Filename']]).
 write_graph(Filename) :-
     self(Self),
     graphviz::new(Graph),
     Self::send_dependencies(Graph),
     Graph::write_dot(Filename, Self).
+
+:- public(output_graph/0).
+:- mode(output_graph, one).
+:- info(output_graph/0, [
+    comment is 'Writes PERT output in GraphViz format to standard output.']).
+output_graph :-
+    self(Self),
+    graphviz::new(Graph),
+    Self::send_dependencies(Graph),
+    Graph::output_dot(Self).
 
 % P R O T O C O L S
 

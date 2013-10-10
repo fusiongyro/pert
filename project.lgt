@@ -39,6 +39,17 @@ send_times(Type, Dest) :-
     self(Self),
     meta::map([Time]>>(Self::send_time(Type, Time, Dest)), Activities).
 
+:- public(pert/1).
+pert(Pert) :-
+    pert::new(Pert),
+    send_times(Pert),
+    ::send_dependencies(Pert).
+
+:- public(pert/2).
+pert(Type, Pert) :-
+    pert::new(Pert),
+    send_times(Type, Pert).
+
 :- private(send_time/3).
 send_time(_, activity(A, Time), Dest) :-
     Dest::add_time(A, Time).

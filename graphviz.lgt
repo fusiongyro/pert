@@ -20,7 +20,8 @@ write_dot(Filename, Labeller) :-
 
 % output_graph(-Project) is det.
 %    Write the Project to the current output stream in GraphViz format.
-output_graph(Labeller) :-
+:- public(output_dot/1).
+output_dot(Labeller) :-
     once(phrase(graph(Labeller), Codes)),
     format('~s', [Codes]).
 
@@ -30,6 +31,7 @@ nl --> "\n".
 
 % graph(-Project) is det.
 %    Generates a Graphviz input file for the given Project.
+:- public(graph//1).
 graph(Labeller) -->
     "digraph G {", nl,
     "  rankdir=LR;", nl, nl,
@@ -49,7 +51,7 @@ names(Names) :-
     findall(Name, ::(Name depends_on _; _ depends_on Name), Names1),
     sort(Names1, Names).
 
-:- private(all_dependencies/1).
+:- public(all_dependencies/1).
 all_dependencies(Deps) :-
     setof(X depends_on Y, ::(X depends_on Y), Deps).
 
