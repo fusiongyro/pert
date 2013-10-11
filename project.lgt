@@ -51,25 +51,10 @@ pert(Type, Pert) :-
     send_times(Type, Pert).
 
 :- private(send_time/3).
-send_time(_, activity(A, Time), Dest) :-
-    Dest::add_time(A, Time).
-send_time(expected, activity(A, Pes, ML, Opt), Dest) :-
-    expected_time(Pes, ML, Opt, Expected),
-    Dest::add_time(A, Expected).
-send_time(simulated, activity(A, Pes, ML, Opt), Dest) :-
-    simulated_time(Pes, ML, Opt, Simulated),
-    Dest::add_time(A, Simulated).
-
-expected_time(Pess, ML, Opt, ET) :-
-    ET is (Opt + ML * 4 + Pess) / 6.
-
-deviation_time(Pess, _, Opt, SigT) :-
-    SigT is (Opt - Pess) / 6.
-
-simulated_time(Pess, ML, Opt, ST) :-
-    expected_time(Pess, ML, Opt, ET),
-    deviation_time(Pess, ML, Opt, SigT),
-    gaussian::gaussian(ET, SigT, ST).
+send_time(Type, Activity, Dest) :-
+    Type::time(Activity, Time),
+    Activity::name(Name),
+    Dest::add_time(Name, Time).
 
 :- end_object.
 

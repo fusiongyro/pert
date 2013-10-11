@@ -1,10 +1,21 @@
-:- object(gaussian).
+:- object(gaussian,
+	 implements(timeCalculator)).
 
 /**
 Uses the Marsaglia polar method to convert a uniform random number in
 the range 0.0-1.0 to a random number from the normal distribution
 defined by its mean and standard deviation.
 */
+
+:- public(time/2).
+time(Activity, Time) :-
+    expected::time(Activity, ET),
+    deviation_time(Activity, SigT),
+    gaussian(ET, SigT, Time).
+
+:- private(deviation_time/2).
+deviation_time(activity(_, Pess, _, Opt), SigT) :-
+    SigT is (Opt - Pess) / 6.
 
 % NOT REALLY PUBLIC!!
 :- public(spare/3).

@@ -8,6 +8,12 @@
 :- set_logtalk_flag(dynamic_declarations, allow).
 
 :- initialization(logtalk_load([
+				      timeCalculator,
+				      activity,
+				      expected,
+				      gaussian,
+				      gamma,
+				      beta,
 				      timeProvider,
 				      timeReceiver,
 				      dependencyProvider,
@@ -16,7 +22,6 @@
 				      labeller,
 				      graphviz,
 				      pert,
-				      gaussian,
 				      project,
 				      csvParser,
 				      main])).
