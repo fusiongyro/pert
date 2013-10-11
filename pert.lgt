@@ -158,7 +158,10 @@ early_finish(Activity, EF) :-
     EF is ES + Duration,
     ::asserta(cache(early_finish(Activity, EF))).
 
-:- private(last_finish/1).
+:- public(last_finish/1).
+:- mode(last_finish(-time), one).
+:- info(last_finish/1, [
+    comment is 'The time when the last item finishes (the end of the project).']).
 last_finish(Cached) :-
     cache(last_finish(Cached)),
     !.

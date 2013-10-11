@@ -101,7 +101,7 @@ logtalk_library_path(my_project_examples, my_project('examples/')).
 :- initialization((
 	set_logtalk_flag(prolog_loader, [silent(true)]),	% for SWI-Prolog and YAP
 	%set_stream(log_output, null),						% for ECLiPSe
-	set_logtalk_flag(report, off)
+	set_logtalk_flag(report, warnings)
 )).
 
 %  To make Logtalk startup and compilation less verbose uncomment the
