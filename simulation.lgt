@@ -4,8 +4,10 @@
 
 % database
 :- public(time/5).
+:- dynamic time/5.
+
 :- public(total_time/1).
-:- dynamic time/5, total_time/1.
+:- dynamic total_time/1.
 
 :- public(simulate/3).
 :- mode(simulate(+timeType, +project, +iterations), one).
@@ -35,6 +37,6 @@ gather_from(Pert) :-
 	    (Pert::early(Activity, EarlyStart-EarlyFinish),
 	     Pert::late(Activity, LateStart-LateFinish)),
 	    Activities),
-    meta::map(::assertz, Activities).
+    meta::map(assertz, Activities).
 
 :- end_object.
