@@ -1,4 +1,4 @@
-:- object(gamma(_, _)).
+:- object(gamma).
 
 :- initialization(precalculate).
 
@@ -10,14 +10,13 @@ precalculate :-
     LOG4 is log(4), ::assertz(log4(LOG4)),
     SG_MAGICCONST is 1.0 + log(4.5), ::assertz(sg_magicconst(SG_MAGICCONST)).
 
-:- public(value/1).
-:- mode(value(-number), zero_or_one).
-:- info(value/1, [
+:- public(value/3).
+:- mode(value(+number, +number, -number), zero_or_one).
+:- info(value/3, [
     comment is 'Implements a Gamma distribution.']).
 % Code borrowed from Python's standard 'random' module:
 %    http://hg.python.org/cpython/file/2.7/Lib/random.py
-value(Value) :-
-    this(gamma(Alpha, Beta)),
+value(Alpha, Beta, Value) :-
     % preconditions
     Alpha > 1, Beta > 0, !,
 
@@ -27,13 +26,11 @@ value(Value) :-
     BBB is Alpha - LOG4,
     CCC is Alpha + Ainv,
     gamma_above_one(Alpha, Beta, Ainv, BBB, CCC, Value).
-value(Value) :-
-    this(gamma(Alpha, Beta)),
+value(Alpha, Beta, Value) :-
     % preconditions
     Alpha =:= 1.0, Beta > 0, !,
     gamma_at_one(Beta, Value).
-value(Value) :-
-    this(gamma(Alpha, Beta)),
+value(Alpha, Beta, Value) :-
     Alpha > 0, Beta > 0, !,
     gamma_below_one(Alpha, Beta, Value).
 
