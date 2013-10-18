@@ -1,7 +1,7 @@
 :- use_module(library(dcg/basics)).
 
 :- initialization(logtalk_load([
-				      '$HOME/logtalk/examples/roots/loader',
+				      roots(loader),
 				      library(all_loader)])).
 
 :- op(500, xfx, depends_on).

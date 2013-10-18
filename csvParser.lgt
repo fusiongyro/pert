@@ -30,6 +30,9 @@ discard_header(_, _).
 row_to_activity(
 	row(Name, Pessimistic, MostLikely, Optimistic, _),
 	activity(Name, Pessimistic, MostLikely, Optimistic)).
+row_to_activity(
+	row(Name, Time, _),
+	activity(Name, Time)).
 
 % rows_to_dependencies(+Rows, +Dependencies) is det.
 %   Convert between CSV rows and dependency relations.
@@ -37,7 +40,14 @@ row_to_activity(
 rows_to_dependencies([], []).
 rows_to_dependencies([row(_,_,_,_,'')|Rows], Deps) :- 
     !, rows_to_dependencies(Rows, Deps).
+rows_to_dependencies([row(_,_,'')|Rows], Deps) :- 
+    !, rows_to_dependencies(Rows, Deps).
 rows_to_dependencies([row(Name, _,_,_, DependencyValue)|Rows], Deps) :-
+    atomic_list_concat(Dependencies, ',', DependencyValue),
+    setof(Name depends_on Dep, list::member(Dep, Dependencies), ConstructedDeps),
+    rows_to_dependencies(Rows, MoreDeps),
+    list::append(ConstructedDeps, MoreDeps, Deps).
+rows_to_dependencies([row(Name, _, DependencyValue)|Rows], Deps) :-
     atomic_list_concat(Dependencies, ',', DependencyValue),
     setof(Name depends_on Dep, list::member(Dep, Dependencies), ConstructedDeps),
     rows_to_dependencies(Rows, MoreDeps),

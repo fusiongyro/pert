@@ -48,7 +48,8 @@ pert(Pert) :-
 :- public(pert/2).
 pert(Type, Pert) :-
     pert::new(Pert),
-    send_times(Type, Pert).
+    send_times(Type, Pert),
+    ::send_dependencies(Pert).
 
 :- private(send_time/3).
 send_time(Type, Activity, Dest) :-
