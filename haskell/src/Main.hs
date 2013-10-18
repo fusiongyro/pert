@@ -18,4 +18,11 @@ Should I output the critical path?
 
 -}
 
+import Parser
+import PERT
 
+main = do
+  activities <- parseFile "example.csv"
+  let pert' = pert activities
+  putStrLn $ "PERT produces: " ++ (show pert')
+  putStrLn $ "The critical path is: " ++ (show $ criticalPath pert')

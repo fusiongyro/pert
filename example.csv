@@ -1,8 +1,8 @@
-Fuselage,40,20,15,
-Wings,60,38,25,Fuselage
-Tail,30,22,18,Fuselage
-Landing Gear,45,28,20,Fuselage
-Horizontal Stabilizer,5,2,1,Tail
-Vertical Stabilizer,5,2,1,Tail
-Wheels,11,8,5,Landing Gear
-Airfoil,14,8,5,Wings
+Fuselage,20,
+Wings,38,Fuselage
+Tail,22,Fuselage
+Landing Gear,28,Fuselage
+Horizontal Stabilizer,2,Tail
+Vertical Stabilizer,2,Tail
+Wheels,8,Landing Gear
+Airfoil,8,Wings
