@@ -14,5 +14,6 @@ parseFile fp = do
     Left err -> fail $ "Parse error: " ++ show err
     Right v -> return $ map convert (V.toList v)
       where
-        convert (name, time :: Double, deps) = (name, time, split (dropBlanks $ oneOf ",") deps)
+        convert (name, time :: Double, deps) =
+          (name, time, split (dropBlanks $ oneOf ",") deps)
 

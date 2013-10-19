@@ -1,6 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module PERT (pert, criticalPath) where
+module PERT (Range, pert, criticalPath) where
 
 --import Data.List.Split
 --import qualified Data.ByteString.Lazy as BL
