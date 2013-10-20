@@ -7,6 +7,8 @@ type Document = [(String, (Range, Range), [String])]
 writeGraph :: Document -> IO ()
 writeGraph doc = putStrLn $ convert doc
   where
+    cp = criticalPath [ (name, time) | (name, time, _) <- doc ]
+    
     convert doc = unlines $ concatMap ($ doc) [header, nodes, edges, footer]
     --header, nodes, edges, footer :: Document -> [String]
     header _ = ["digraph G {", "  rankdir=LR;", ""]
@@ -14,8 +16,12 @@ writeGraph doc = putStrLn $ convert doc
     edges = ("":) . concatMap edge
     footer _ = ["}"]
 
-    cp = criticalPath [ (name, time) | (name, time, _) <- doc ]
-    node (name, times, _) = "  \"" ++ name ++ "\" [shape=rect,label=" ++ label times ++ cpStyle name ++ "]"
+
+    node (name, times, _) =
+      "  \"" ++ name ++ "\" " ++
+      "[shape=rect,label=" ++ label times ++ cpStyle name ++
+      "]"
+      
     label ((es, ef), (ls, lf)) | es == ls && ef == lf =
       "<<TABLE BORDER=\"0\"><TR>" ++
       "<TD>" ++ show es ++ "</TD>" ++
@@ -34,7 +40,11 @@ writeGraph doc = putStrLn $ convert doc
       "<TD>" ++ show lf ++ "</TD>" ++
       "</TR></TABLE>>"
       
-    edge (name, _, deps) = [ "  \"" ++ dep ++ "\" -> \"" ++ name ++ "\"" ++ edgeLabel name dep ++ ";" | dep <- deps ]
+    edge (name, _, deps) =
+      [
+      "  \"" ++ dep ++ "\" -> \"" ++ name ++ "\"" ++ edgeLabel name dep ++ ";"
+      | dep <- deps
+      ]
 
     cpStyle n | n `elem` cp = ",style=bold"
               | otherwise   = ""
